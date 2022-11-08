@@ -15,7 +15,7 @@ check_if_running_as_root() {
 }
 
 network_interfaces () {
-    read -p "$( printf "${bold}${GREEN}your machine default network interface is?$bold$magenta $INTERFACE $GREEN(y/n): $magenta" )" RESP
+    read -p "$( printf "${bold}${GREEN}your machine default Network interface is?$bold$magenta $INTERFACE $GREEN(y/n): $magenta" )" RESP
     if [ "$RESP" = "y" ]; then
     echo -e "${bold}${GREEN}you chose$magenta $INTERFACE "
     read_setting
@@ -82,8 +82,8 @@ network_interfaces () {
 
 read_setting() {
     echo ""
-     read -p "$( printf "${GREEN}Please enter your remote VPN SERVER address (example$yellow 104.16.15.0): $bold$magenta")" VPN_IP
-     read -p "$( printf "${GREEN}Please enter your local Proxy Port,$yellow 127.0.0.1:$bold$magenta")" PORT
+     read -p "$( printf "${GREEN}Enter remote VPN SERVER address (example$yellow 104.16.15.0): $bold$magenta")" VPN_IP
+     read -p "$( printf "${GREEN}Enter local Proxy Port,$yellow 127.0.0.1:$bold$magenta")" PORT
      echo -e "$yellow"
      echo "Stop with CTL+C !!!"
      echo -e "$normal"
