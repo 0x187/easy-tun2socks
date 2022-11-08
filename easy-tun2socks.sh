@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-variables() {
-    #colors
-    yellow="\e[93m"; bold="\e[1m"; magenta="\033[1;31m"; normal="\e[0m"; cyan="\e[36m"; red="\e[91m"; GREEN="\e[32m"
-    
-    GATEWAY=$(/sbin/ip route | awk '/default/ { print $3 }')
-    INTERFACE=$(/sbin/ip route | awk '/default/ { print $5 }')
-}
+
+#colors
+yellow="\e[93m"; bold="\e[1m"; magenta="\033[1;31m"; normal="\e[0m"; cyan="\e[36m"; red="\e[91m"; GREEN="\e[32m"
+
+GATEWAY=$(/sbin/ip route | awk '/default/ { print $3 }')
+INTERFACE=$(/sbin/ip route | awk '/default/ { print $5 }')
+chmod +x ./tun2socks
 
 check_if_running_as_root() {
     if [ "$EUID" -ne 0 ]
@@ -72,7 +72,7 @@ network_interfaces () {
                     break
                     ;;            
                 "Quit")
-                    break
+                    exit 0
                     ;;
                 *) echo "invalid option$magenta $REPLY";;
         esac
@@ -85,21 +85,20 @@ read_setting() {
      read -p "$( printf "${GREEN}Enter remote VPN SERVER address (example$yellow 104.16.15.0): $bold$magenta")" VPN_IP
      read -p "$( printf "${GREEN}Enter local Proxy Port,$yellow 127.0.0.1:$bold$magenta")" PORT
      echo -e "$yellow"
-     echo "Stop with CTL+C !!!"
-     echo -e "$normal"
      sleep 1
 }
 
 cleanup() {
-    variables
     ip link set dev tun0 down > /dev/null  2>&1
     ip r flush dev tun0  > /dev/null  2>&1
     ip r flush dev  $INTERFACE > /dev/null  2>&1
     systemctl restart NetworkManager
-    sleep 1
 }
 
 tun2socks () {
+    printf "${yellow}${bold}server: ${VPN_IP}:${PORT} \ngateway: ${GATEWAY} ${INTERFACE} \n"
+    echo -e "${bold}${GREEN}Stop with CTL+C !!!"
+    echo -e "$normal"
 	if ! ip link set dev tun0 up &>/dev/null ; then
     	 ip tuntap add mode tun dev tun0
     	 ip addr add 198.18.0.1/15 dev tun0
@@ -108,25 +107,39 @@ tun2socks () {
 	     ip route del default
 	     ip route add $VPN_IP via $GATEWAY dev $INTERFACE metric 1
 	     ip route add default via 198.18.0.1 dev tun0 metric 2
-	     systemd-run --scope -p MemoryLimit=50M -p CPUQuota=10% ./tun2socks -device tun0 -proxy socks5://127.0.0.1:${PORT} --loglevel error
+	     systemd-run --scope -p MemoryLimit=50M -p CPUQuota=10% ./tun2socks -device tun0 -proxy socks5://127.0.0.1:${PORT} --loglevel silent
          cleanup
 }
 
-
 main() {
-    variables
     printf '\e[2J\e[3J\e[H'
     check_if_running_as_root
-    chmod +x ./tun2socks
     cleanup
     network_interfaces
     tun2socks
 }
+
+main2() {
+    printf '\e[2J\e[3J\e[H'
+    check_if_running_as_root
+    tun2socks
+}
+
 if [ "$1" = "-r" ]; then
-    cleanup
-    sleep 2
-    echo "Done"
-    exit 0
+cleanup
+exit 0
 fi
 
-main
+if [ -n "$1" ];then
+    while getopts s:p: flag
+        do
+        case "${flag}" in
+        s) VPN_IP=${OPTARG};;
+        p) PORT=${OPTARG};;
+        esac
+    done
+        main2
+    else
+        main
+fi
+
