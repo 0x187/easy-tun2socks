@@ -7,6 +7,11 @@ This is a simple script that will route all traffic through socks proxy using tu
 ```bash
 sudo ./easy-tun2socks.sh
 ```
+or with options:
+-s remote server addres and -p local proxy port
+```bash
+sudo ./easy-tun2socks.sh -s 104.16.65.0 -p 2080
+```
 
 You can also use this tool to rest network setting . For example:
 ```bash
