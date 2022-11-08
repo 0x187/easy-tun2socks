@@ -1,6 +1,6 @@
 # easy-tun2socks
 This is a simple script that will route all traffic through socks proxy using tun2socks tun adapter
-
+![](https://raw.githubusercontent.com/0x187/ClearText/main/images/Peek%202022-11-08%2018-32.gif)
 
 ## Running 
 
